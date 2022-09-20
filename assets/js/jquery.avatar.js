@@ -12,6 +12,7 @@
     AG.setTypes( setsJSON );
     AG.setPalettes( palettesJSON );
 
+
     /*
     * JQuery Avatar Plugin
     */
@@ -55,4 +56,347 @@
 
         return false;
     });
+
+    $( 'a[data-navigate]' ).on('click', function(){
+
+        var toSet = $(this).data('navigate');
+        var subnav = $(this).data('subnav');
+
+        $('.nav-selected').removeClass('nav-selected');
+        $(this).addClass('nav-selected');
+
+        AG.setCurrentSet( toSet );
+        AG.loadToClothes( toSet );
+        AG.loadToColors( toSet );
+
+        if(typeof subnav !== "undefined"){
+            $('.sub-navigation .display').removeClass('display').addClass('hidden');
+            $('#' + subnav).removeClass('hidden').addClass('display');
+        }
+
+        return false;
+    });
+
+
+    /*
+    * Item clicking triggers
+    *
+    */
+   
+    $('#avatarSelector').on('click', 'a[data-clothing]', function(){
+
+        var current = AG.getPart(AG.getCurrentSet());
+        var color = (typeof current.color === "undefined" || current.color == "") ? "61" : current.color;
+
+        $('.selected').removeClass('selected');
+        $(this).addClass('selected');
+
+        AG.setPart(AG.getCurrentSet(), color, $(this).data('clothing'));
+        AG.updateAvatar();
+
+        return false;
+    });
+
+    $('#avatarSelector').on('click', 'a[data-color]', function(){
+
+        var current = AG.getPart(AG.getCurrentSet());
+        var paletteid = $(this).attr('data-palette');
+        var hex = $(this).attr('data-color');
+
+        AG.setPart(AG.getCurrentSet(), AG.filterByHex(paletteid, hex), current.set);
+        AG.updateAvatar();
+
+        return false;
+    });
+
+    $('#avatarSelector').on('click', 'a[data-remove="true"]', function(){
+
+        $('.selected').removeClass('selected');
+        $(this).addClass('selected');
+
+        AG.unsetPart(AG.getCurrentSet());
+        AG.updateAvatar();
+
+        return false;
+    });
+
+
+    /*
+     * To create a default character you should use
+     * AG.importFigure( "LOOK-FROM-DATABASE" )
+     *
+     * This includes the figure - you should set
+     * the default figure if you are planning to
+     * use this in a CMS so that the user can
+     * change from their last save.
+     *
+     */
+
+    function AvatarGenerate(){
+
+
+        /*
+         * This object controls what the
+         * display for the habbo is.
+         *
+         * @type    object
+         */
+
+        var habbo = {
+            hr: { color: '61', set: '831' },
+            hd: { color: '2', set: '3092' },
+            ch: { color: '110-1408', set: '3438' },
+            lg: { color: '110', set: '3058' },
+            sh: { color: '1408', set: '3089' },
+            ha: { color: '', set: '' },
+            he: { color: '', set: '' },
+            ea: { color: '', set: '' },
+            fa: { color: '', set: '' },
+            ca: { color: '110', set: '3219' },
+            wa: { color: '0', set: '2001' },
+            cc: { color: '', set: '' },
+            cp: { color: '', set: '' }
+        };
+
+
+        /*
+         * This object controls what the
+         * display for the habbo is.
+         *
+         * @type    object
+         */
+
+        var habboFemale = {
+            hr: { color: '33', set: '515' },
+            hd: { color: '1', set: '600' },
+            ch: { color: '70', set: '635' },
+            lg: { color: '66-62', set: '716' },
+            sh: { color: '68', set: '735' },
+            ha: { color: '', set: '' },
+            he: { color: '', set: '' },
+            ea: { color: '', set: '' },
+            fa: { color: '', set: '' },
+            ca: { color: '', set: '' },
+            wa: { color: '', set: '' },
+            cc: { color: '', set: '' },
+            cp: { color: '', set: '' }
+        };
+
+        this.getHabbo = function(){
+            return habbo;
+        };
+
+
+        /*
+         * Gender default should be M.
+         */
+
+        this.gender = "M";
+
+
+        /*
+         * Get the current gender
+         *
+         * @return  string
+         *
+         */
+
+        this.getGender = function () {
+            return this.gender;
+        };
+
+
+        /*
+         * Switch the gender, so if the user
+         * is currently male, switch him/her
+         * to female.
+         *
+         */
+
+        this.switchGender = function(){
+            this.gender = (this.gender !== 'M' && this.gender !== 'F' || this.gender == 'F') ? 'M' : 'F';
+        };
+
+
+        /*
+         * Set a specific part for the Habbo variable.
+         *
+         * @param   part
+         * @param   color
+         * @param   set
+         */
+
+        this.setPart = function(part, color, set){
+
+            if(this.getGender() == "M"){
+
+                habbo[ part ] = { color: color, set: set};
+
+            } else {
+
+                habboFemale[ part ] = { color: color, set: set};
+            }
+        };
+
+
+        /*
+         * Unset a specific part for the Habbo variable.
+         *
+         * @param   part
+         *
+         */
+
+        this.unsetPart = function( part ){
+
+            if(this.gender() == "M"){
+
+                habbo[ part ] = { set: '' };
+
+            } else {
+
+                habboFemale[ part ] = { set: '' };
+            }
+        };
+
+
+        /*
+         * Get a specific part of the Habbo variable.
+         *
+         * @param   part
+         */
+
+        this.getPart = function( part ){
+
+            if(this.getGender() == "M"){
+
+                return habbo[ part ];
+
+            } else {
+
+                return habboFemale[ part ];
+            }
+        };
+
+
+        /*
+         * This is used to determine the current set
+         * that the user is looking through.
+         *
+         * @type    string
+         */
+
+        var currentSet = "hd";
+
+
+        /*
+         * Get the current set that the user is looking
+         * through.
+         *
+         * @return  string
+         */
+
+        this.getCurrentSet = function(){
+
+            return currentSet;
+        };
+
+
+         /*
+         * Set the current set that the user is looking
+         * through.
+         *
+         * @param   current string
+         */
+
+         this.setCurrentSet = function( current ){
+
+            currentSet = current;
+         };
+
+
+         /*
+         * This figure data will be provided by the PHP
+         * script that accompanies this - it generates
+         * two files: palettes.json and settypes.json
+         *
+         * @type    object
+         */
+
+         var figuredata = { palettes: {}, set: {} };
+
+
+         /*
+         * Return all of the palettes.
+         *
+         * @return  object
+         */
+
+         this.getPalettes = function(){
+
+            return figuredata.palettes;
+         };
+
+
+         /*
+         * Return a palette by ID.
+         *
+         * @return object
+         */
+
+         this.getPalette = function( id ){
+
+            figuredata.palettes[ id ];
+         };
+
+
+         /*
+         * Use this function to hand the settypes.json
+         * created by the PHP script that accompanies
+         * the javascript file.
+         *
+         */
+
+         this.setPalettes = function( json ){
+
+            figuredata.palettes = json;
+         };
+
+
+         /*
+         * Use this function to hand the settypes.json
+         * created by the PHP script that accompanies
+         * the javascript file.
+         *
+         */
+
+         this.setTypes = function( json ){
+
+            figuredata.sets = json;
+         };
+
+
+         /*
+         * Build the figure from the habbo variable
+         * and then compile a string that will be then
+         * sent to the Habbo imager.
+         *
+         */
+
+         this.buildFigure = function( usingHabbo ){
+
+            var figure = "";
+
+            jQuery.each((this.getGender() == "M" ) ? habbo : habboFemale, 
+            function( index, value){
+
+                if( value.set == "" || value.color == "" )
+                    return;
+
+                    figure = figure + "." + index + "-" + value.set + "-" + value.color;
+            });
+
+            return figure.substring(1, figure.length);
+         };
+    }
+
 })
