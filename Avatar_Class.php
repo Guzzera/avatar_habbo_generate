@@ -152,7 +152,7 @@ class Avatar {
 
             if(!is_dir($this->output)) {
 
-                mkdir( $this->output);;
+                mkdir( $this->output);
             }
 
             $f = fopen( $outputFile, "w");
